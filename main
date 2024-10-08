@@ -1,0 +1,88 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+# Simulated data collection from sensors
+def collect_sensor_data(num_samples):
+    """
+    Simulates data collection from Heart Rate, GSR, and Skin Temperature sensors.
+    Returns a pandas DataFrame with sensor readings and corresponding emotions.
+    """
+    np.random.seed(42)
+    
+    # Generate random sensor data
+    heart_rate = np.random.randint(60, 120, size=num_samples)
+    gsr = np.random.uniform(0.5, 5.0, size=num_samples)
+    skin_temp = np.random.uniform(30, 38, size=num_samples)
+    
+    # Random emotions (labeled 0 to 6 representing emotions like Happy, Angry, etc.)
+    emotions = np.random.randint(0, 7, size=num_samples)
+    
+    # Create a DataFrame
+    df = pd.DataFrame({
+        'HeartRate': heart_rate,
+        'GSR': gsr,
+        'SkinTemp': skin_temp,
+        'Emotion': emotions
+    })
+    
+    return df
+
+# Feature extraction (for demonstration, we assume raw sensor values as features)
+def extract_features(data):
+    """
+    Extracts basic time-domain features from the sensor data.
+    Returns features and corresponding labels.
+    """
+    X = data[['HeartRate', 'GSR', 'SkinTemp']].values  # Features
+    y = data['Emotion'].values  # Labels (emotion categories)
+    return X, y
+
+# Split data into training and testing sets
+def split_data(X, y):
+    return train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train models and evaluate
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    # Scale features
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # Define classifiers
+    classifiers = {
+        'SVM': SVC(),
+        'KNN': KNeighborsClassifier(),
+        'Decision Tree': DecisionTreeClassifier(),
+        'Random Forest': RandomForestClassifier()
+    }
+    
+    # Train and evaluate each classifier
+    for name, clf in classifiers.items():
+        clf.fit(X_train_scaled, y_train)
+        y_pred = clf.predict(X_test_scaled)
+        accuracy = accuracy_score(y_test, y_pred)
+        print(f'{name} Accuracy: {accuracy:.2%}')
+
+# Main function to run the emotion tracking system
+def main():
+    # Step 1: Collect sensor data
+    data = collect_sensor_data(num_samples=500)
+    
+    # Step 2: Extract features
+    X, y = extract_features(data)
+    
+    # Step 3: Split the data
+    X_train, X_test, y_train, y_test = split_data(X, y)
+    
+    # Step 4: Train and evaluate classifiers
+    train_and_evaluate(X_train, X_test, y_train, y_test)
+
+if __name__ == "__main__":
+    main()
